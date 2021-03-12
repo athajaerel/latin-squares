@@ -1,2 +1,2 @@
 #!/bin/sh
-./compile.sh ; ./a.out
+./compile.sh ; ./run.sh
