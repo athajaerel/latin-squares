@@ -34,8 +34,32 @@ using std::chrono::high_resolution_clock;
 
 void backtrack_row(vector<vector<int>> &ma_grid,
 		vector<vector<int>>::iterator &it_row,
-		vector<int>::iterator &it_cell) {
+		vector<int>::iterator &it_cell,
+		vector<int> &ar_cands, vector<int> &ar_nope) {
 	// TO DO
+	
+/*
+	// if no possibilities, backtrack instead
+	// move item back, subtract one from it_cell,
+	// continue
+//	ar_cands.push_back(*it_cell);
+//	*it_cell = BADNUM;
+//	it_cell--;
+//	ar_cands.push_back(*it_cell);
+//	*it_cell = BADNUM;
+//	it_cell--;
+	backtrack_row(ma_grid, it_row, it_cell);
+	continue;
+
+	// test if it works ok
+	// - if not, try again
+	// check column above - that's it! find what index
+	// we're at in the grid.
+	auto ix_pos = it_cell - it_row->begin();
+	if (!test_cell(ma_grid, it_row, ix_pos, *it_cell)) {
+		backtrack_row(ma_grid, it_row, it_cell);
+	}
+*/
 }
 
 template <class Stringable>
@@ -93,6 +117,12 @@ bool test_cell(vector<vector<int>> &ma_grid,
 	return true;
 }
 
+void select_cand(vector<int> &ar_cands, vector<int>::iterator &it_cell,
+		int ix_random) {
+	*it_cell = ar_cands[ix_random];
+	ar_cands.erase(ar_cands.begin() + ix_random);
+}
+
 void generate_matrix_row(vector<vector<int>> &ma_grid,
 		vector<vector<int>>::iterator &it_row) {
 	// generate rows, test each char as we go and backtrack
@@ -113,33 +143,19 @@ void generate_matrix_row(vector<vector<int>> &ma_grid,
 	vector<int> ar_cands = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 				12, 13, 14, 15, 16, 17, 18, 19, 20,
 				21, 22, 23, 24, 25};
+	vector<int> ar_nope = {};
 	auto it_cell = it_row->begin();
 	for ( ; it_cell != it_row->end(); ++it_cell) {
 		// move random member from ar_cands into it_cell
-		if (ar_cands.size() > 0) {
-			auto ix_random = roll() % ar_cands.size();
-			*it_cell = ar_cands[ix_random];
-			ar_cands.erase(ar_cands.begin() + ix_random);
-		} else {
-			// if no possibilities, backtrack instead
-			// move item back, subtract one from it_cell,
-			// continue
-			ar_cands.push_back(*it_cell);
-			*it_cell = BADNUM;
-			it_cell--;
-			ar_cands.push_back(*it_cell);
-			*it_cell = BADNUM;
-			it_cell--;
+		if (ar_cands.size() == 0) {
+			backtrack_row(ma_grid, it_row, it_cell, ar_cands, ar_nope);
 			continue;
 		}
-
-		// test if it works ok
-		// - if not, try again
-		// check column above - that's it! find what index
-		// we're at in the grid.
+		auto ix_random = roll() % ar_cands.size();
+		select_cand(ar_cands, it_cell, ix_random);
 		auto ix_pos = it_cell - it_row->begin();
 		if (!test_cell(ma_grid, it_row, ix_pos, *it_cell)) {
-			backtrack_row(ma_grid, it_row, it_cell);
+			backtrack_row(ma_grid, it_row, it_cell, ar_cands, ar_nope);
 		}
 	}
 }
